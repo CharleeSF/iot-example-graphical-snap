@@ -9,12 +9,12 @@ description: |
 confinement: strict
 compression: lzo
 grade: stable
-base: core22
+base: core24
 
 apps:
   iot-example-graphical-snap:
     command-chain: &_command-chain
-      - bin/graphics-core22-wrapper
+      - bin/gpu-2404-wrapper
       - bin/wayland-launch
     command: &_command usr/games/neverputt
     plugs: &_plugs
@@ -27,7 +27,7 @@ apps:
       PULSE_SERVER: unix:$XDG_RUNTIME_DIR/../pulse/native
       PULSE_SYSTEM: 1
       PULSE_RUNTIME_PATH: /var/run/pulse
-      LD_LIBRARY_PATH: ${LD_LIBRARY_PATH:+$LD_LIBRARY_PATH:}${SNAP}/usr/lib/${SNAPCRAFT_ARCH_TRIPLET}:${SNAP}/usr/lib/${SNAPCRAFT_ARCH_TRIPLET}/pulseaudio
+      LD_LIBRARY_PATH: ${LD_LIBRARY_PATH:+$LD_LIBRARY_PATH:}${SNAP}/usr/lib/${CRAFT_ARCH_TRIPLET_BUILD_FOR}:${SNAP}/usr/lib/${CRAFT_ARCH_TRIPLET_BUILD_FOR}/pulseaudio
 
   daemon:
     daemon: simple
@@ -40,12 +40,12 @@ apps:
 
 # This is one of four snippets that relate to providing the userspace graphics needed by your application.
 # You can treat this as "magic" so long as you don't need to make changes.
-# On the Mir website there's a lot more detail on [the graphics-core22 Snap interface](https://mir-server.io/docs/the-graphics-core22-snap-interface) and it's use.
+# On the Mir website there's a lot more detail on [the gpu-2404 Snap interface](https://mir-server.io/docs/the-gpu-2404-snap-interface) and it's use.
 plugs:
-  graphics-core22:
+  gpu-2404:
     interface: content
-    target: $SNAP/graphics
-    default-provider: mesa-core22
+    target: $SNAP/gpu-2404
+    default-provider: mesa-2404
 
 environment:
   # Other, generally useful environment settings...
@@ -60,9 +60,9 @@ environment:
 # The `layout` ensures that files can be found by applications where they are expected by the toolkit or application.
 layout:
   /usr/share/libdrm:
-    bind: $SNAP/graphics/libdrm
+    bind: $SNAP/gpu-2404/libdrm
   /usr/share/drirc.d:
-    symlink: $SNAP/graphics/drirc.d
+    symlink: $SNAP/gpu-2404/drirc.d
   # Other, generally useful paths
   /usr/share/fonts:
     bind: $SNAP/usr/share/fonts
@@ -93,6 +93,7 @@ parts:
       - libsdl2-image-2.0-0
       - libsdl2-mixer-2.0-0
       - libsdl2-net-2.0-0
+      - xkb-data
 
   # Some utility scripts for setting up the Wayland environment
   setup:
@@ -101,30 +102,30 @@ parts:
     override-build: |
       # The plugs needed to run Wayland. (wayland-launch checks them, setup.sh connects them)
       # You may add further plugs here if you want these options
-      PLUGS="opengl wayland graphics-core22 hardware-observe audio-playback joystick"
+      PLUGS="opengl wayland gpu-2404 hardware-observe audio-playback joystick"
       sed --in-place "s/%PLUGS%/$PLUGS/g" $CRAFT_PART_BUILD/bin/wayland-launch
       sed --in-place "s/%PLUGS%/$PLUGS/g" $CRAFT_PART_BUILD/bin/setup.sh
       craftctl default
     stage-packages:
       - inotify-tools
 
-  graphics-core22:
+  gpu-2404:
     after:
       # Your application packaging
       - setup
-    source: https://github.com/MirServer/graphics-core22.git
+    source: https://github.com/canonical/gpu-snap.git
     plugin: dump
     override-prime: |
       craftctl default
-      ${CRAFT_PART_SRC}/bin/graphics-core22-cleanup mesa-core22 nvidia-core22
+      ${CRAFT_PART_SRC}/bin/gpu-2404-cleanup mesa-2404
       cd "$CRAFT_PRIME/usr/share/"
       rm -rf bug drirc.d glvnd libdrm lintian man
       rm -rf applications apport bash-completion dbus-1 doc-base doc gtk-doc\
              help pkgconfig libthai metainfo themes thumbnailers xml
     prime:
-      - bin/graphics-core22-wrapper
+      - bin/gpu-2404-wrapper
 
-architectures:
-  - build-on: amd64
-  - build-on: armhf
-  - build-on: arm64
+platforms:
+  amd64:
+  armhf:
+  arm64:
