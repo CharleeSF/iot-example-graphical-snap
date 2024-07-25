@@ -17,6 +17,7 @@ apps:
       - bin/gpu-2404-wrapper
       - bin/wayland-launch
     command: &_command usr/games/neverputt
+    desktop: &_desktop usr/share/applications/neverputt.desktop
     plugs: &_plugs
       - opengl
       - wayland
@@ -35,6 +36,7 @@ apps:
     restart-condition: always
     command-chain: *_command-chain
     command: *_command
+    desktop: *_desktop
     plugs: *_plugs
     environment: *_environment
 
@@ -94,6 +96,9 @@ parts:
       - libsdl2-mixer-2.0-0
       - libsdl2-net-2.0-0
       - xkb-data
+    override-stage: |
+      craftctl default
+      sed -i s:Icon=neverputt:Icon=/usr/share/games/neverball/icon/neverputt.png:g $CRAFT_STAGE/usr/share/applications/neverputt.desktop
 
   # Some utility scripts for setting up the Wayland environment
   setup:
