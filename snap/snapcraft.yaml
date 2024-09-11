@@ -152,7 +152,7 @@ parts:
     stage-packages:
       - inotify-tools
 
-  graphics-core22:
+  graphics-core24:
     after:
       - flutterdemo
       - gsettings+pixbuf+immodules
